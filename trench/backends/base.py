@@ -1,4 +1,5 @@
 from django.db.models import Model
+from rest_framework import request as rf_request
 
 from abc import ABC, abstractmethod
 from pyotp import TOTP
@@ -12,10 +13,13 @@ from trench.settings import SOURCE_FIELD, VALIDITY_PERIOD, trench_settings
 
 
 class AbstractMessageDispatcher(ABC):
-    def __init__(self, mfa_method: MFAMethod, config: Dict[str, Any]) -> None:
+    def __init__(
+        self, mfa_method: MFAMethod, config: Dict[str, Any], request: rf_request.Request
+    ) -> None:
         self._mfa_method = mfa_method
         self._config = config
         self._to = self._get_source_field()
+        self.request = request
 
     def _get_source_field(self) -> Optional[str]:
         if SOURCE_FIELD in self._config:

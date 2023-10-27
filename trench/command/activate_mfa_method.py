@@ -1,5 +1,7 @@
 from typing import Callable, Set, Type
 
+from rest_framework import request as rf_request
+
 from trench.backends.provider import get_mfa_handler
 from trench.command.generate_backup_codes import generate_backup_codes_command
 from trench.command.replace_mfa_method_backup_codes import (
@@ -17,10 +19,10 @@ class ActivateMFAMethodCommand:
         self._mfa_model = mfa_model
         self._backup_codes_generator = backup_codes_generator
 
-    def execute(self, user_id: int, name: str, code: str) -> Set[str]:
+    def execute(self, user_id: int, name: str, code: str, request: rf_request.Request) -> Set[str]:
         mfa = self._mfa_model.objects.get_by_name(user_id=user_id, name=name)
 
-        get_mfa_handler(mfa).confirm_activation(code)
+        get_mfa_handler(mfa, request).confirm_activation(code)
 
         rows_affected = self._mfa_model.objects.filter(
             user_id=user_id, name=name
